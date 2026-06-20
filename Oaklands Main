@@ -9,21 +9,21 @@ local CoreGui = game:GetService("CoreGui")
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 
---// STATES
+--// STATE
 local targetTreePos = nil
 local autoTreeTeleport = false
 local clickTeleportPlayer = true
 local freecamActive = false
 local freecamPart = nil
 
---// TELEPORT DATA
+--// TELEPORTS
 local savedTeleports = {
-    {Name = "💵Resource Hub", Position = Vector3.new(-54.8, 35.9, -74.4)},
-    {Name = "💵OakDepot", Position = Vector3.new(303.5, 33.0, -575.8)},
-    {Name = "🌳Snow Biome", Position = Vector3.new(-7422.5, 1188.6, -3564.2)},
-    {Name = "🌳Sui Tree", Position = Vector3.new(1629.1, -1785.9, 1391.6)},
-    {Name = "🌳Plek Cave", Position = Vector3.new(-2655.5, -817.3, 1323.3)},
-    {Name = "🌳Magma Forest", Position = Vector3.new(-1593.3, -317.9, 306.7)}
+    {Name = "💵 Resource Hub", Position = Vector3.new(-54.8, 35.9, -74.4)},
+    {Name = "💵 OakDepot", Position = Vector3.new(303.5, 33.0, -575.8)},
+    {Name = "🌳 Snow Biome", Position = Vector3.new(-7422.5, 1188.6, -3564.2)},
+    {Name = "🌳 Sui Tree", Position = Vector3.new(1629.1, -1785.9, 1391.6)},
+    {Name = "🌳 Plek Cave", Position = Vector3.new(-2655.5, -817.3, 1323.3)},
+    {Name = "🌳 Magma Forest", Position = Vector3.new(-1593.3, -317.9, 306.7)}
 }
 
 --// THEME
@@ -34,7 +34,6 @@ local Theme = {
     Text = Color3.fromRGB(240,240,240),
     Green = Color3.fromRGB(0,220,120),
     Red = Color3.fromRGB(220,60,60),
-    Border = Color3.fromRGB(50,50,60)
 }
 
 --// GUI
@@ -47,35 +46,29 @@ local Main = Instance.new("Frame")
 Main.Size = UDim2.new(0,500,0,600)
 Main.Position = UDim2.new(0.5,-250,0.5,-300)
 Main.BackgroundColor3 = Theme.Background
-Main.BorderSizePixel = 0
 Main.Parent = ScreenGui
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0,16)
 
-local Stroke = Instance.new("UIStroke")
-Stroke.Color = Theme.Border
-Stroke.Thickness = 1.5
-Stroke.Parent = Main
-
---// DRAGGING
+--// DRAG
 local dragging, dragStart, startPos
-Main.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+Main.InputBegan:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
-        dragStart = input.Position
+        dragStart = i.Position
         startPos = Main.Position
     end
 end)
 
-UserInputService.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local delta = input.Position - dragStart
+UserInputService.InputChanged:Connect(function(i)
+    if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = i.Position - dragStart
         Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
                                   startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 end)
 
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+UserInputService.InputEnded:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = false
     end
 end)
@@ -90,7 +83,7 @@ Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0,16)
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1,0,1,0)
 Title.BackgroundTransparency = 1
-Title.Text = "Sharks Modern Oaklands Hub"
+Title.Text = "Oaklands Hub"
 Title.TextColor3 = Theme.Text
 Title.Font = Enum.Font.GothamBold
 Title.TextScaled = true
@@ -102,11 +95,6 @@ TabHolder.Size = UDim2.new(1,-20,0,40)
 TabHolder.Position = UDim2.new(0,10,0,65)
 TabHolder.BackgroundTransparency = 1
 TabHolder.Parent = Main
-
-local TabLayout = Instance.new("UIListLayout")
-TabLayout.FillDirection = Enum.FillDirection.Horizontal
-TabLayout.Padding = UDim.new(0,8)
-TabLayout.Parent = TabHolder
 
 local Content = Instance.new("Frame")
 Content.Size = UDim2.new(1,-20,1,-120)
@@ -122,7 +110,6 @@ local function CreateTab(name)
     btn.BackgroundColor3 = Theme.Secondary
     btn.Text = name
     btn.TextColor3 = Theme.Text
-    btn.Font = Enum.Font.GothamBold
     btn.Parent = TabHolder
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0,12)
 
@@ -152,7 +139,7 @@ local MiscPage = CreateTab("Misc")
 
 MainPage.Visible = true
 
---// UI HELPERS
+--// TOGGLE (UPDATED ON/OFF TEXT)
 local function CreateToggle(page, text, default, callback)
     local holder = Instance.new("Frame")
     holder.Size = UDim2.new(1,0,0,60)
@@ -161,34 +148,47 @@ local function CreateToggle(page, text, default, callback)
     Instance.new("UICorner", holder).CornerRadius = UDim.new(0,12)
 
     local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1,-80,1,0)
+    label.Size = UDim2.new(1,-120,1,0)
     label.Position = UDim2.new(0,15,0,0)
     label.Text = text
     label.TextColor3 = Theme.Text
     label.BackgroundTransparency = 1
+    label.Font = Enum.Font.Gotham
+    label.TextXAlignment = Enum.TextXAlignment.Left
     label.Parent = holder
 
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0,50,0,24)
-    btn.Position = UDim2.new(1,-65,0.5,-12)
-    btn.Parent = holder
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(1,0)
+    local stateLabel = Instance.new("TextLabel")
+    stateLabel.Size = UDim2.new(0,80,1,0)
+    stateLabel.Position = UDim2.new(1,-90,0,0)
+    stateLabel.BackgroundTransparency = 1
+    stateLabel.Font = Enum.Font.GothamBold
+    stateLabel.TextScaled = true
+    stateLabel.Parent = holder
 
     local state = default
 
     local function update()
-        btn.BackgroundColor3 = state and Theme.Green or Theme.Red
+        if state then
+            stateLabel.Text = "ON"
+            stateLabel.TextColor3 = Theme.Green
+        else
+            stateLabel.Text = "OFF"
+            stateLabel.TextColor3 = Theme.Red
+        end
         if callback then callback(state) end
     end
 
-    btn.MouseButton1Click:Connect(function()
-        state = not state
-        update()
+    holder.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            state = not state
+            update()
+        end
     end)
 
     update()
 end
 
+--// BUTTON
 local function CreateButton(page, text, callback)
     local b = Instance.new("TextButton")
     b.Size = UDim2.new(1,0,0,50)
@@ -239,38 +239,12 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
---// TREE TELEPORT
-local function TeleportTree(part, finalPos)
-    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not hrp or not part then return end
-
-    part.CFrame = hrp.CFrame * CFrame.new(0,0,-7)
-
-    task.wait(0.15)
-
-    local t = tick()
-    while tick() - t < 0.8 do
-        part.AssemblyLinearVelocity = Vector3.zero
-        part.CFrame = CFrame.new(finalPos + Vector3.new(0,12,0))
-        RunService.Heartbeat:Wait()
-    end
-end
-
---// MAIN FEATURES
+--// MAIN TAB
 CreateToggle(MainPage,"Auto Tree Teleport",false,function(v)
     autoTreeTeleport = v
 end)
 
-CreateToggle(MainPage,"Click Teleport (F)",true,function(v)
-    clickTeleportPlayer = v
-end)
-
-CreateToggle(MainPage,"Freecam",false,function(v)
-    ToggleFreecam()
-end)
-
---// TELEPORT PAGE
-CreateButton(TeleportPage,"Set Tree Position",function()
+CreateButton(MainPage,"Set Tree Position",function()
     if freecamActive then
         targetTreePos = Camera.CFrame.Position
     elseif LocalPlayer.Character then
@@ -278,6 +252,7 @@ CreateButton(TeleportPage,"Set Tree Position",function()
     end
 end)
 
+--// TELEPORT TAB
 for _,tp in ipairs(savedTeleports) do
     CreateButton(TeleportPage,tp.Name,function()
         if LocalPlayer.Character then
@@ -286,6 +261,15 @@ for _,tp in ipairs(savedTeleports) do
     end)
 end
 
+--// MISC TAB
+CreateToggle(MiscPage,"Click Teleport (F)",true,function(v)
+    clickTeleportPlayer = v
+end)
+
+CreateToggle(MiscPage,"Freecam",false,function(v)
+    ToggleFreecam()
+end)
+
 --// INPUT
 UserInputService.InputBegan:Connect(function(input,gp)
     if gp then return end
@@ -293,7 +277,8 @@ UserInputService.InputBegan:Connect(function(input,gp)
     if input.KeyCode == Enum.KeyCode.F and clickTeleportPlayer then
         local mouse = LocalPlayer:GetMouse()
         if LocalPlayer.Character then
-            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.Position + Vector3.new(0,3,0))
+            LocalPlayer.Character.HumanoidRootPart.CFrame =
+                CFrame.new(mouse.Hit.Position + Vector3.new(0,3,0))
         end
     end
 
@@ -302,10 +287,10 @@ UserInputService.InputBegan:Connect(function(input,gp)
         local finalPos = targetTreePos
 
         if mouse.Target and finalPos then
-            local model = mouse.Target:FindFirstAncestorOfClass("Model") or mouse.Target.Parent
+            local model = mouse.Target:FindFirstAncestorOfClass("Model")
             if model then
                 local part = model.PrimaryPart or mouse.Target
-                TeleportTree(part, finalPos)
+                part.CFrame = CFrame.new(finalPos + Vector3.new(0,12,0))
             end
         end
     end
