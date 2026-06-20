@@ -14,6 +14,7 @@ local autoTreeTeleport = false
 local clickTeleportPlayer = true
 local freecamActive = false
 local freecamPart = nil
+local mouseOnGui = false
 
 --// TELEPORTS 
 local savedTeleports = {
@@ -35,58 +36,61 @@ local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Parent = game:GetService("CoreGui")
 ScreenGui.ResetOnSpawn = false
 
+
 --// MAIN FRAME
 local Frame = Instance.new("Frame")
 Frame.Size = UDim2.new(0, 460, 0, 520)
 Frame.Position = UDim2.new(0.5, -230, 0.5, -260)
 Frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Frame.Active = true
 Frame.Parent = ScreenGui
 Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 14)
+Frame.MouseEnter:Connect(function()
+    mouseOnGui = true
+end)
 
---// SERVICES
-local UserInputService = game:GetService("UserInputService")
-
+Frame.MouseLeave:Connect(function()
+    mouseOnGui = false
+end)
 --// DRAG VARIABLES
 local dragging = false
 local dragStart
 local startPos
 
---// START DRAG
 Frame.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = true
-		dragStart = input.Position
-		startPos = Frame.Position
-	end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = Frame.Position
+    end
 end)
 
---// DRAG MOVE
 UserInputService.InputChanged:Connect(function(input)
-	if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-		local delta = input.Position - dragStart
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
 
-		Frame.Position = UDim2.new(
-			startPos.X.Scale,
-			startPos.X.Offset + delta.X,
-			startPos.Y.Scale,
-			startPos.Y.Offset + delta.Y
-		)
-	end
+        Frame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
 end)
 
---// STOP DRAG
 UserInputService.InputEnded:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 then
-		dragging = false
-	end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
 end)
+
 --// MINIMISED ICON
 local Mini = Instance.new("TextButton")
 Mini.Size = UDim2.new(0, 120, 0, 40)
-Mini.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 Mini.Position = UDim2.new(0, 47, 0, 819)
 Mini.Text = "Open Hub"
 Mini.TextColor3 = Color3.new(1,1,1)
+Mini.BackgroundColor3 = Color3.fromRGB(45,45,45)
 Mini.Visible = false
 Mini.Parent = ScreenGui
 Instance.new("UICorner", Mini)
@@ -126,6 +130,7 @@ local TabButtons = Instance.new("Frame")
 TabButtons.Size = UDim2.new(1, 0, 0, 40)
 TabButtons.Position = UDim2.new(0, 0, 0, 50)
 TabButtons.BackgroundTransparency = 1
+TabButtons.Active = true
 TabButtons.Parent = Frame
 
 local function CreateTabBtn(text, pos)
@@ -150,6 +155,7 @@ Scrolling.Size = UDim2.new(1, -20, 1, -110)
 Scrolling.Position = UDim2.new(0, 10, 0, 100)
 Scrolling.BackgroundTransparency = 1
 Scrolling.ScrollBarThickness = 2
+Scrolling.Active = true
 Scrolling.Parent = Frame
 
 local Layout = Instance.new("UIListLayout")
@@ -162,6 +168,49 @@ local function Clear()
             v:Destroy()
         end
     end
+end
+
+--// NOTIFICATION SYSTEM
+local NotificationGui = Instance.new("ScreenGui")
+NotificationGui.Name = "TreeNotifications"
+NotificationGui.ResetOnSpawn = false
+NotificationGui.Parent = game:GetService("CoreGui")
+
+local NotifyFrame = Instance.new("Frame")
+NotifyFrame.Size = UDim2.new(0, 260, 0, 45)
+NotifyFrame.Position = UDim2.new(1, -20, 1, -20)
+NotifyFrame.AnchorPoint = Vector2.new(1, 1)
+NotifyFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+NotifyFrame.BackgroundTransparency = 0.35
+NotifyFrame.Visible = false
+NotifyFrame.Parent = NotificationGui
+Instance.new("UICorner", NotifyFrame).CornerRadius = UDim.new(0, 8)
+
+local NotifyText = Instance.new("TextLabel")
+NotifyText.Size = UDim2.new(1, -10, 1, 0)
+NotifyText.Position = UDim2.new(0, 5, 0, 0)
+NotifyText.BackgroundTransparency = 1
+NotifyText.TextColor3 = Color3.new(1, 1, 1)
+NotifyText.TextScaled = true
+NotifyText.Font = Enum.Font.SourceSans
+NotifyText.Parent = NotifyFrame
+
+local function showNotification(text, duration)
+    NotifyText.Text = text
+    NotifyFrame.Visible = true
+
+    task.delay(duration or 2, function()
+        NotifyFrame.Visible = false
+    end)
+end
+
+--// TELEPORT VERIFY
+local function verifyTreeTeleport(part, expectedPos)
+    if not part then return false end
+    task.wait(1)
+
+    local distance = (part.Position - expectedPos).Magnitude
+    return distance < 25
 end
 
 --// FREECAM 
@@ -200,9 +249,10 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
---// TOGGLE UI 
+--// UI HELPERS
 local function Toggle(text, state, callback)
     local f = Instance.new("Frame")
+    f.Active = true
     f.Size = UDim2.new(1, 0, 0, 55)
     f.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
     f.Parent = Scrolling
@@ -239,7 +289,6 @@ local function Toggle(text, state, callback)
     update()
 end
 
---// BUTTON UI
 local function Button(text, callback)
     local b = Instance.new("TextButton")
     b.Size = UDim2.new(1, 0, 0, 50)
@@ -254,8 +303,7 @@ local function Button(text, callback)
     end)
 end
 
---// TABS 
-
+--// TABS
 local function ShowFarm()
     Clear()
 
@@ -295,9 +343,11 @@ local function ShowSettings()
     end)
 end
 
---// INPUT 
-UserInputService.InputBegan:Connect(function(input, gp)
-    if gp then return end
+--// INPUT
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then
+        return
+    end
 
     if input.KeyCode == Enum.KeyCode.F and clickTeleportPlayer then
         local m = LocalPlayer:GetMouse()
@@ -312,14 +362,29 @@ UserInputService.InputBegan:Connect(function(input, gp)
 
         if m.Target and targetTreePos then
             local model = m.Target:FindFirstAncestorOfClass("Model")
+
             if model then
                 local part = model.PrimaryPart or m.Target
-                part.CFrame = CFrame.new(targetTreePos + Vector3.new(0,12,0))
+
+                showNotification("Tree teleport status: checking...", 2)
+
+                part.CFrame = CFrame.new(targetTreePos + Vector3.new(0, 12, 0))
+
+                task.spawn(function()
+                    local success = verifyTreeTeleport(part, targetTreePos)
+
+                    if success then
+                        showNotification("Tree teleport status: SUCCESS ✅", 2)
+                    else
+                        showNotification("Tree teleport status: FAILED ❌", 2)
+                    end
+                end)
             end
         end
     end
 end)
 
+--// TAB HOOKS
 FarmTabBtn.MouseButton1Click:Connect(ShowFarm)
 TeleportTabBtn.MouseButton1Click:Connect(ShowTeleports)
 SettingsTabBtn.MouseButton1Click:Connect(ShowSettings)
