@@ -17,7 +17,7 @@ local freecamPart = nil
 
 --// TELEPORTS 
 local savedTeleports = {
-    {Name = "🏠Wood Drop (1)", Position = Vector3.new(814.0, 6.6, 263.5)},
+    {Name = "🏠Wood Drop (1)", Position = Vector3.new(930.6, 1.8, -405.9)},
     {Name = "🏠Wood Drop (2)", Position = Vector3.new(814.0, 6.6, 263.5)},
     {Name = "💵Resource Hub", Position = Vector3.new(-54.8, 35.9, -74.4)},
     {Name = "💵OakDepot", Position = Vector3.new(303.5, 33.0, -575.8)},
